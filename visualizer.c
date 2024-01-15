@@ -120,7 +120,7 @@ void draw_customer_locations(SDL_Renderer* m_window_renderer, cvrptw_problem_t p
             #if CUSTOMER_CIRCLE_FILLED == 1
             DrawCircle(m_window_renderer, problem.customer_data[i].xcoord, problem.customer_data[i].ycoord, radius);
             #else
-            DrawHollowCircle(m_window_renderer, problem.data[i].xcoord, problem.data[i].ycoord, radius);
+            DrawHollowCircle(m_window_renderer, problem.customer_data[i].xcoord, problem.customer_data[i].ycoord, radius);
             #endif
         }
     }
@@ -140,7 +140,7 @@ void draw_customer_locations(SDL_Renderer* m_window_renderer, cvrptw_problem_t p
             #if CUSTOMER_CIRCLE_FILLED == 1
             DrawCircle(m_window_renderer, problem.customer_data[i].xcoord, problem.customer_data[i].ycoord, radius);
             #else
-            DrawHollowCircle(m_window_renderer, problem.data[i].xcoord, problem.data[i].ycoord, radius);
+            DrawHollowCircle(m_window_renderer, problem.customer_data[i].xcoord, problem.customer_data[i].ycoord, radius);
             #endif
         }
     }
