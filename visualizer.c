@@ -1,5 +1,5 @@
 #include "visualizer.h"
-//#include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_ttf.h>
 #include <pthread.h>
 
 /**
@@ -100,7 +100,6 @@ void draw_customer_locations(SDL_Renderer* m_window_renderer, cvrptw_problem_t p
         DrawCircle(m_window_renderer, problem.data[i].xcoord, problem.data[i].ycoord, VISUALIZER_CUSTOMER_RADIUS);
     }
 
-    SDL_RenderPresent(m_window_renderer);
 }
 
 SDL_Window   *m_window          = NULL;
@@ -126,15 +125,47 @@ void* eventListenerThreadHandler(void* arg_p) {
 }
 
 void render_counter(unsigned int counter) {
-    //TTF_Font* Sans = TTF_OpenFont("Sans.ttf", 24);
+    TTF_Font* Sans = TTF_OpenFont("../assets/fonts/OpenSans-SemiboldItalic.ttf", 24);
+    if (Sans == NULL) {
+        printf("TTF_OpenFont: %s\n", TTF_GetError());
+        return;
+    }
+
     SDL_Color White = {255, 255, 255};
+    char text[20];
+    sprintf(text, "Time: %u", counter);
+    SDL_Surface* surfaceMessage = TTF_RenderText_Solid(Sans, text, White);
+    SDL_Texture* Message = SDL_CreateTextureFromSurface(m_window_renderer, surfaceMessage);
+    SDL_Rect Message_rect; //create a rect
+    Message_rect.x = 0;  //controls the rect's x coordinate 
+    Message_rect.y = 0; // controls the rect's y coordinte
+    Message_rect.w = 90; // controls the width of the rect
+    Message_rect.h = 30; // controls the height of the rect
+    //Message_rect.w = surfaceMessage->w;
+    //Message_rect.h = surfaceMessage->h;
+    SDL_RenderCopy(m_window_renderer, Message, NULL, &Message_rect);
+    //SDL_RenderPresent(m_window_renderer);
+    SDL_FreeSurface(surfaceMessage);
+    SDL_DestroyTexture(Message);
 }
 
-void animate() {
+void animate(cvrptw_problem_t problem) {
+    ready_time_t counter = 0;
     while(1) {
-        SDL_Delay(1000);
-        printf("animating...\n");
+        draw_customer_locations(m_window_renderer, problem, window_width, window_height);
+        render_counter(counter);
+        SDL_RenderPresent(m_window_renderer);
+        SDL_Delay(100);
+        counter++;
     }
+}
+
+int init_ttf() {
+    if (TTF_Init() < 0) {
+        printf("TTF_Init: %s\n", TTF_GetError());
+        return 1;
+    }
+    return 0;
 }
 
 int display_cvrptw_visualization_window() {
@@ -176,6 +207,8 @@ int display_cvrptw_visualization_window() {
         printf("SDL2 Error: %s\n", SDL_GetError());
         return 1;
     }
+
+    init_ttf();
     
     pthread_t eventListenerTID;
     pthread_create(&eventListenerTID, NULL, eventListenerThreadHandler, NULL);
@@ -185,6 +218,5 @@ int display_cvrptw_visualization_window() {
 
 void load_animation_for_data(char* path) {
     cvrptw_problem_t problem = cvrptw_data_get(path);
-    draw_customer_locations(m_window_renderer, problem, window_width, window_height);
-    animate();
+    animate(problem);
 }
