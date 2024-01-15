@@ -18,7 +18,9 @@
  * 7. Service time
  * @return The CVRPTW problem data.
  * @note The function assumes that the file is formatted correctly.
- * @note The function assumes that the file contains no more than CVRPTW_MAX_CUSTOMERS lines.
+ * @note The function assumes that the file contains no more than CVRPTW_MAX_CUSTOMERS+1 lines
+ * @note The first line of the file should contain the depot data.
+ * @note The function assumes that file lines are no longer than MAX_CVRPTW_DATA_FILE_LINE_LENGTH characters.
 */
 cvrptw_problem_t cvrptw_data_get(char* path) {
     cvrptw_problem_t problem;
@@ -27,15 +29,32 @@ cvrptw_problem_t cvrptw_data_get(char* path) {
     problem.num_customers = 0;
     
     char line[MAX_CVRPTW_DATA_FILE_LINE_LENGTH];
+    
+    if (NULL != fgets(line, MAX_CVRPTW_DATA_FILE_LINE_LENGTH, file)) {
+        sscanf(line, "%u %u.00 %u.00 %u.00 %u.00 %u.00 %u.00",
+            &problem.depot.cust_no,
+            &problem.depot.xcoord,
+            &problem.depot.ycoord,
+            &problem.depot.demand,
+            &problem.depot.ready_time,
+            &problem.depot.due_time,
+            &problem.depot.service_time
+        );
+    }
+    else {
+        perror("Error: fgets returned NULL");
+        exit(EXIT_FAILURE);
+    }
+
     while (NULL != fgets(line, MAX_CVRPTW_DATA_FILE_LINE_LENGTH, file)) {
         sscanf(line, "%u %u.00 %u.00 %u.00 %u.00 %u.00 %u.00",
-            &problem.data[problem.num_customers].cust_no,
-            &problem.data[problem.num_customers].xcoord,
-            &problem.data[problem.num_customers].ycoord,
-            &problem.data[problem.num_customers].demand,
-            &problem.data[problem.num_customers].ready_time,
-            &problem.data[problem.num_customers].due_time,
-            &problem.data[problem.num_customers].service_time
+            &problem.customer_data[problem.num_customers].cust_no,
+            &problem.customer_data[problem.num_customers].xcoord,
+            &problem.customer_data[problem.num_customers].ycoord,
+            &problem.customer_data[problem.num_customers].demand,
+            &problem.customer_data[problem.num_customers].ready_time,
+            &problem.customer_data[problem.num_customers].due_time,
+            &problem.customer_data[problem.num_customers].service_time
         );
         problem.num_customers++;
     }
@@ -81,15 +100,26 @@ cvrptw_solution_t cvrptw_solution_get(char* path) {
 
 void cvrptw_data_print(cvrptw_problem_t problem) {
     printf("Number of customers: %u\n", problem.num_customers);
+    printf("Depot: %u %u %u %u %u %u %u\n", 
+        problem.depot.cust_no,
+        problem.depot.xcoord,
+        problem.depot.ycoord,
+        problem.depot.demand,
+        problem.depot.ready_time,
+        problem.depot.due_time,
+        problem.depot.service_time
+    );
+    printf("Customer data:\n");
+
     for (cust_numeric_t i = 0; i < problem.num_customers; i++) {
         printf("%u %u %u %u %u %u %u\n", 
-            problem.data[i].cust_no,
-            problem.data[i].xcoord,
-            problem.data[i].ycoord,
-            problem.data[i].demand,
-            problem.data[i].ready_time,
-            problem.data[i].due_time,
-            problem.data[i].service_time
+            problem.customer_data[i].cust_no,
+            problem.customer_data[i].xcoord,
+            problem.customer_data[i].ycoord,
+            problem.customer_data[i].demand,
+            problem.customer_data[i].ready_time,
+            problem.customer_data[i].due_time,
+            problem.customer_data[i].service_time
         );
     }
 }

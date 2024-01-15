@@ -61,29 +61,23 @@ void draw_customer_locations(SDL_Renderer* m_window_renderer, cvrptw_problem_t p
     SDL_SetRenderDrawColor(m_window_renderer, 0, 0, 0, 255);
     SDL_RenderFillRect(m_window_renderer, &rect);
 
-    xcoord_t min_x;
-    xcoord_t max_x;
-    ycoord_t min_y;
-    ycoord_t max_y;
+    xcoord_t min_x = problem.depot.xcoord;
+    xcoord_t max_x = problem.depot.xcoord;
+    ycoord_t min_y = problem.depot.ycoord;
+    ycoord_t max_y = problem.depot.ycoord;
+
     for (cust_numeric_t i = 0; i < problem.num_customers; i++) {
-        if (i == 0) {
-            min_x = problem.data[i].xcoord;
-            max_x = problem.data[i].xcoord;
-            min_y = problem.data[i].ycoord;
-            max_y = problem.data[i].ycoord;
-        } else {
-            if (problem.data[i].xcoord < min_x) {
-                min_x = problem.data[i].xcoord;
-            }
-            if (problem.data[i].xcoord > max_x) {
-                max_x = problem.data[i].xcoord;
-            }
-            if (problem.data[i].ycoord < min_y) {
-                min_y = problem.data[i].ycoord;
-            }
-            if (problem.data[i].ycoord > max_y) {
-                max_y = problem.data[i].ycoord;
-            }
+        if (problem.customer_data[i].xcoord < min_x) {
+            min_x = problem.customer_data[i].xcoord;
+        }
+        if (problem.customer_data[i].xcoord > max_x) {
+            max_x = problem.customer_data[i].xcoord;
+        }
+        if (problem.customer_data[i].ycoord < min_y) {
+            min_y = problem.customer_data[i].ycoord;
+        }
+        if (problem.customer_data[i].ycoord > max_y) {
+            max_y = problem.customer_data[i].ycoord;
         }
     }
 
@@ -97,20 +91,23 @@ void draw_customer_locations(SDL_Renderer* m_window_renderer, cvrptw_problem_t p
     unsigned int y_range = max_y - min_y;
     unsigned int x_scale = window_width / x_range;
     unsigned int y_scale = window_height / y_range;
+
+    problem.depot.xcoord = (problem.depot.xcoord - min_x) * x_scale;
+    problem.depot.ycoord = (problem.depot.ycoord - min_y) * y_scale;
     for (int i = 0; i < problem.num_customers; i++) {
-        problem.data[i].xcoord = (problem.data[i].xcoord - min_x) * x_scale;
-        problem.data[i].ycoord = (problem.data[i].ycoord - min_y) * y_scale;
+        problem.customer_data[i].xcoord = (problem.customer_data[i].xcoord - min_x) * x_scale;
+        problem.customer_data[i].ycoord = (problem.customer_data[i].ycoord - min_y) * y_scale;
     }
 
     SDL_SetRenderDrawColor(m_window_renderer, 255, 0, 0, 255);
-    DrawCircle(m_window_renderer, problem.data[0].xcoord, problem.data[0].ycoord, VISUALIZER_DEPOT_RADIUS);
+    DrawCircle(m_window_renderer, problem.depot.xcoord, problem.depot.ycoord, VISUALIZER_DEPOT_RADIUS);
     
     #if TIME_WINDOWS_COLOR_CODING == 0
     SDL_SetRenderDrawColor(m_window_renderer, 100, 100, 100, 255);
     #endif
 
 
-    /*for (int i = 1; i < problem.num_customers; i++) {
+    /*for (int i = 0; i < problem.num_customers; i++) {
         #if TIME_WINDOWS_COLOR_CODING == 1
         if (problem.data[i].ready_time <= t && t <= problem.data[i].due_time) {
             SDL_SetRenderDrawColor(m_window_renderer, 0, 255, 0, 255);
@@ -128,10 +125,10 @@ void draw_customer_locations(SDL_Renderer* m_window_renderer, cvrptw_problem_t p
 
     SDL_SetRenderDrawColor(m_window_renderer, 100, 100, 100, 255);
     #if TIME_WINDOWS_HIDE_CUSTOMERS == 0
-    for (int i = 1; i < problem.num_customers; i++) {
-        if (problem.data[i].ready_time > t || t > problem.data[i].due_time) {
+    for (int i = 0; i < problem.num_customers; i++) {
+        if (problem.customer_data[i].ready_time > t || t > problem.customer_data[i].due_time) {
             #if CUSTOMER_CIRCLE_FILLED == 1
-            DrawCircle(m_window_renderer, problem.data[i].xcoord, problem.data[i].ycoord, VISUALIZER_CUSTOMER_RADIUS == 0 ? problem.data[i].demand : VISUALIZER_CUSTOMER_RADIUS);
+            DrawCircle(m_window_renderer, problem.customer_data[i].xcoord, problem.customer_data[i].ycoord, VISUALIZER_CUSTOMER_RADIUS == 0 ? problem.customer_data[i].demand : VISUALIZER_CUSTOMER_RADIUS);
             #else
             DrawHollowCircle(m_window_renderer, problem.data[i].xcoord, problem.data[i].ycoord, VISUALIZER_CUSTOMER_RADIUS == 0 ? problem.data[i].demand : VISUALIZER_CUSTOMER_RADIUS);
             #endif
@@ -141,10 +138,10 @@ void draw_customer_locations(SDL_Renderer* m_window_renderer, cvrptw_problem_t p
     #if TIME_WINDOWS_COLOR_CODING == 1
     SDL_SetRenderDrawColor(m_window_renderer, 0, 255, 0, 255);
     #endif
-    for (int i = 1; i < problem.num_customers; i++) {
-        if (problem.data[i].ready_time <= t && t <= problem.data[i].due_time) {
+    for (int i = 0; i < problem.num_customers; i++) {
+        if (problem.customer_data[i].ready_time <= t && t <= problem.customer_data[i].due_time) {
             #if CUSTOMER_CIRCLE_FILLED == 1
-            DrawCircle(m_window_renderer, problem.data[i].xcoord, problem.data[i].ycoord, VISUALIZER_CUSTOMER_RADIUS == 0 ? problem.data[i].demand : VISUALIZER_CUSTOMER_RADIUS);
+            DrawCircle(m_window_renderer, problem.customer_data[i].xcoord, problem.customer_data[i].ycoord, VISUALIZER_CUSTOMER_RADIUS == 0 ? problem.customer_data[i].demand : VISUALIZER_CUSTOMER_RADIUS);
             #else
             DrawHollowCircle(m_window_renderer, problem.data[i].xcoord, problem.data[i].ycoord, VISUALIZER_CUSTOMER_RADIUS == 0 ? problem.data[i].demand : VISUALIZER_CUSTOMER_RADIUS);
             #endif
@@ -202,7 +199,7 @@ void render_counter(unsigned int counter) {
 
 void animate(cvrptw_problem_t problem) {
     ready_time_t counter = 0;
-    due_time_t max_due_time = problem.data[0].due_time;
+    due_time_t max_due_time = problem.depot.due_time;
     while(counter <= max_due_time) {
         draw_customer_locations(m_window_renderer, problem, window_width, window_height, counter);
         render_counter(counter);

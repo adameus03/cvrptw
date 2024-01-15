@@ -13,7 +13,8 @@
  * 7. Service time
  * @return The CVRPTW problem data.
  * @note The function assumes that the file is formatted correctly.
- * @note The function assumes that the file contains no more than CVRPTW_MAX_CUSTOMERS rows.
+ * @note The function assumes that the file contains no more than CVRPTW_MAX_CUSTOMERS+1 rows.
+ * @note The first line of the file should contain the depot data.
  * @note The function assumes that file lines are no longer than MAX_CVRPTW_DATA_FILE_LINE_LENGTH characters.
 */
 cvrptw_problem_t cvrptw_data_get(char* path);

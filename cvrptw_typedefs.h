@@ -21,7 +21,8 @@ typedef struct {
 
 typedef struct {
     cust_numeric_t num_customers;
-    cvrptw_data_entry_t data[CVRPTW_MAX_CUSTOMERS];
+    cvrptw_data_entry_t depot;
+    cvrptw_data_entry_t customer_data[CVRPTW_MAX_CUSTOMERS];
 } cvrptw_problem_t;
 
 typedef struct {

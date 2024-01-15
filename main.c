@@ -7,6 +7,6 @@ int main()
     //load_data("../data/r101");
     //animate();
     
-    load_animation_for_data("../data/c101");
+    load_animation_for_data("../data/r101");
     return 0;
 }
