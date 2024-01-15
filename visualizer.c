@@ -50,16 +50,16 @@ void DrawHollowCircle(SDL_Renderer* renderer, int32_t centreX, int32_t centreY, 
 }
 
 void draw_customer_locations(SDL_Renderer* m_window_renderer, cvrptw_problem_t problem, unsigned int window_width, unsigned int window_height, ready_time_t t) {
-    SDL_RenderClear(m_window_renderer);
+    //SDL_RenderClear(m_window_renderer);
 
-    SDL_Rect rect;
+    /*SDL_Rect rect;
     rect.x = 0;
     rect.y = 0;
     rect.w = window_width;
     rect.h = window_height;
 
     SDL_SetRenderDrawColor(m_window_renderer, 0, 0, 0, 255);
-    SDL_RenderFillRect(m_window_renderer, &rect);
+    SDL_RenderFillRect(m_window_renderer, &rect);*/
 
     xcoord_t min_x = problem.depot.xcoord;
     xcoord_t max_x = problem.depot.xcoord;
@@ -169,7 +169,20 @@ void* eventListenerThreadHandler(void* arg_p) {
     }
 }
 
+/**
+ * @todo Get rid of magic numbers
+*/
 void render_counter(unsigned int counter) {
+    // Clear counter area
+    SDL_Rect rect;
+    rect.x = 0;
+    rect.y = 0;
+    rect.w = 90;
+    rect.h = 30;
+    SDL_SetRenderDrawColor(m_window_renderer, 0, 0, 0, 255);
+    SDL_RenderFillRect(m_window_renderer, &rect);
+    SDL_RenderCopy(m_window_renderer, NULL, &rect, &rect);
+
     TTF_Font* Sans = TTF_OpenFont("../assets/fonts/OpenSans-SemiboldItalic.ttf", 24);
     if (Sans == NULL) {
         printf("TTF_OpenFont: %s\n", TTF_GetError());
