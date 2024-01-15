@@ -106,31 +106,21 @@ void draw_customer_locations(SDL_Renderer* m_window_renderer, cvrptw_problem_t p
     SDL_SetRenderDrawColor(m_window_renderer, 100, 100, 100, 255);
     #endif
 
-
-    /*for (int i = 0; i < problem.num_customers; i++) {
-        #if TIME_WINDOWS_COLOR_CODING == 1
-        if (problem.data[i].ready_time <= t && t <= problem.data[i].due_time) {
-            SDL_SetRenderDrawColor(m_window_renderer, 0, 255, 0, 255);
-        } else {
-            SDL_SetRenderDrawColor(m_window_renderer, 100, 100, 100, 255);
-        }
-        #endif
-        #if TIME_WINDOWS_HIDE_CUSTOMERS == 1
-        if (problem.data[i].ready_time > t || t > problem.data[i].due_time) {
-            continue;
-        }
-        #endif
-        DrawHollowCircle(m_window_renderer, problem.data[i].xcoord, problem.data[i].ycoord, VISUALIZER_CUSTOMER_RADIUS == 0 ? problem.data[i].demand : VISUALIZER_CUSTOMER_RADIUS);
-    }*/
-
     SDL_SetRenderDrawColor(m_window_renderer, 100, 100, 100, 255);
     #if TIME_WINDOWS_HIDE_CUSTOMERS == 0
     for (int i = 0; i < problem.num_customers; i++) {
         if (problem.customer_data[i].ready_time > t || t > problem.customer_data[i].due_time) {
+            int32_t radius = VISUALIZER_CUSTOMER_RADIUS == 0 ? DEMAND_CODING_FACTOR * problem.customer_data[i].demand : VISUALIZER_CUSTOMER_RADIUS;
+            if (radius < MIN_CUSTOMER_RADIUS) {
+                radius = MIN_CUSTOMER_RADIUS;
+            }
+            else if (radius > MAX_CUSTOMER_RADIUS) {
+                radius = MAX_CUSTOMER_RADIUS;
+            }
             #if CUSTOMER_CIRCLE_FILLED == 1
-            DrawCircle(m_window_renderer, problem.customer_data[i].xcoord, problem.customer_data[i].ycoord, VISUALIZER_CUSTOMER_RADIUS == 0 ? problem.customer_data[i].demand : VISUALIZER_CUSTOMER_RADIUS);
+            DrawCircle(m_window_renderer, problem.customer_data[i].xcoord, problem.customer_data[i].ycoord, radius);
             #else
-            DrawHollowCircle(m_window_renderer, problem.data[i].xcoord, problem.data[i].ycoord, VISUALIZER_CUSTOMER_RADIUS == 0 ? problem.data[i].demand : VISUALIZER_CUSTOMER_RADIUS);
+            DrawHollowCircle(m_window_renderer, problem.data[i].xcoord, problem.data[i].ycoord, radius);
             #endif
         }
     }
@@ -140,10 +130,17 @@ void draw_customer_locations(SDL_Renderer* m_window_renderer, cvrptw_problem_t p
     #endif
     for (int i = 0; i < problem.num_customers; i++) {
         if (problem.customer_data[i].ready_time <= t && t <= problem.customer_data[i].due_time) {
+            int32_t radius = VISUALIZER_CUSTOMER_RADIUS == 0 ? DEMAND_CODING_FACTOR * problem.customer_data[i].demand : VISUALIZER_CUSTOMER_RADIUS;
+            if (radius < MIN_CUSTOMER_RADIUS) {
+                radius = MIN_CUSTOMER_RADIUS;
+            }
+            else if (radius > MAX_CUSTOMER_RADIUS) {
+                radius = MAX_CUSTOMER_RADIUS;
+            }
             #if CUSTOMER_CIRCLE_FILLED == 1
-            DrawCircle(m_window_renderer, problem.customer_data[i].xcoord, problem.customer_data[i].ycoord, VISUALIZER_CUSTOMER_RADIUS == 0 ? problem.customer_data[i].demand : VISUALIZER_CUSTOMER_RADIUS);
+            DrawCircle(m_window_renderer, problem.customer_data[i].xcoord, problem.customer_data[i].ycoord, radius);
             #else
-            DrawHollowCircle(m_window_renderer, problem.data[i].xcoord, problem.data[i].ycoord, VISUALIZER_CUSTOMER_RADIUS == 0 ? problem.data[i].demand : VISUALIZER_CUSTOMER_RADIUS);
+            DrawHollowCircle(m_window_renderer, problem.data[i].xcoord, problem.data[i].ycoord, radius);
             #endif
         }
     }
@@ -197,7 +194,22 @@ void render_counter(unsigned int counter) {
     SDL_DestroyTexture(Message);
 }
 
-void animate(cvrptw_problem_t problem) {
+void animate_problem(cvrptw_problem_t problem) {
+    ready_time_t counter = 0;
+    due_time_t max_due_time = problem.depot.due_time;
+    while(counter <= max_due_time) {
+        draw_customer_locations(m_window_renderer, problem, window_width, window_height, counter);
+        render_counter(counter);
+        SDL_RenderPresent(m_window_renderer);
+        SDL_Delay(FRAME_DURATION_MS);
+        counter++;
+    }
+}
+
+/**
+ * @todo Add support for solution
+*/
+void animate_problem_with_solution(cvrptw_problem_t problem, cvrptw_solution_t solution) {
     ready_time_t counter = 0;
     due_time_t max_due_time = problem.depot.due_time;
     while(counter <= max_due_time) {
@@ -265,7 +277,19 @@ int display_cvrptw_visualization_window() {
     return 0;
 }
 
-void load_animation_for_data(char* path) {
-    cvrptw_problem_t problem = cvrptw_data_get(path);
-    animate(problem);
+void load_animation_for_data(char* problem_path, char* sol_path) {
+    if (problem_path == NULL) {
+        perror("Error: problem_path is NULL");
+        exit(EXIT_FAILURE);
+    }
+    
+    cvrptw_problem_t problem = cvrptw_data_get(problem_path);
+    if (sol_path == NULL) {
+        animate_problem(problem);
+    }
+    else {
+        cvrptw_solution_t solution = cvrptw_solution_get(sol_path);
+        animate_problem_with_solution(problem, solution);   
+    }
+    
 }
