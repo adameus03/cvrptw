@@ -1,6 +1,7 @@
 #define CVRPTW_MAX_CUSTOMERS 101
 #define MAX_CVRPTW_DATA_FILE_LINE_LENGTH 100
-#define VISUALIZER_WINDOW_WIDTH 0 // Means full-width
-#define VISUALIZER_WINDOW_HEIGHT 0 // Means full-height
-#define VISUALIZER_CUSTOMER_RADIUS 10
+#define VISUALIZER_WINDOW_WIDTH 0 // 0 means full-width
+#define VISUALIZER_WINDOW_HEIGHT 0 // 0 means full-height
+#define VISUALIZER_DEPOT_RADIUS 10
+#define VISUALIZER_CUSTOMER_RADIUS 0 // 0 means demand-coded radius
 #define VISUALIZER_SCENE_MARGIN 2

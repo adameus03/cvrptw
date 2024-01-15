@@ -39,7 +39,7 @@ void DrawCircle(SDL_Renderer* renderer, int32_t centreX, int32_t centreY, int32_
     }
 }
 
-void draw_customer_locations(SDL_Renderer* m_window_renderer, cvrptw_problem_t problem, unsigned int window_width, unsigned int window_height) {
+void draw_customer_locations(SDL_Renderer* m_window_renderer, cvrptw_problem_t problem, unsigned int window_width, unsigned int window_height, ready_time_t t) {
     SDL_RenderClear(m_window_renderer);
 
     SDL_Rect rect;
@@ -93,11 +93,16 @@ void draw_customer_locations(SDL_Renderer* m_window_renderer, cvrptw_problem_t p
     }
 
     SDL_SetRenderDrawColor(m_window_renderer, 255, 0, 0, 255);
-    DrawCircle(m_window_renderer, problem.data[0].xcoord, problem.data[0].ycoord, VISUALIZER_CUSTOMER_RADIUS);
+    DrawCircle(m_window_renderer, problem.data[0].xcoord, problem.data[0].ycoord, VISUALIZER_DEPOT_RADIUS);
     
     SDL_SetRenderDrawColor(m_window_renderer, 0, 255, 0, 255);
     for (int i = 1; i < problem.num_customers; i++) {
-        DrawCircle(m_window_renderer, problem.data[i].xcoord, problem.data[i].ycoord, VISUALIZER_CUSTOMER_RADIUS);
+        if (problem.data[i].ready_time <= t && t <= problem.data[i].due_time) {
+            SDL_SetRenderDrawColor(m_window_renderer, 0, 255, 0, 255);
+        } else {
+            SDL_SetRenderDrawColor(m_window_renderer, 100, 100, 100, 255);
+        }
+        DrawCircle(m_window_renderer, problem.data[i].xcoord, problem.data[i].ycoord, VISUALIZER_CUSTOMER_RADIUS == 0 ? problem.data[i].demand : VISUALIZER_CUSTOMER_RADIUS);
     }
 
 }
@@ -151,8 +156,9 @@ void render_counter(unsigned int counter) {
 
 void animate(cvrptw_problem_t problem) {
     ready_time_t counter = 0;
-    while(1) {
-        draw_customer_locations(m_window_renderer, problem, window_width, window_height);
+    due_time_t max_due_time = problem.data[0].due_time;
+    while(counter <= max_due_time) {
+        draw_customer_locations(m_window_renderer, problem, window_width, window_height, counter);
         render_counter(counter);
         SDL_RenderPresent(m_window_renderer);
         SDL_Delay(100);
