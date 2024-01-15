@@ -27,7 +27,7 @@ cvrptw_problem_t cvrptw_data_get(char* path) {
     
     char line[MAX_CVRPTW_DATA_FILE_LINE_LENGTH];
     while (NULL != fgets(line, MAX_CVRPTW_DATA_FILE_LINE_LENGTH, file)) {
-        sscanf(line, "%u %u.00 %u.00 %u.00 %u.00 %u.00 %u.00", 
+        sscanf(line, "%u %u.00 %u.00 %u.00 %u.00 %u.00 %u.00",
             &problem.data[problem.num_customers].cust_no,
             &problem.data[problem.num_customers].xcoord,
             &problem.data[problem.num_customers].ycoord,

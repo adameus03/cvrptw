@@ -2,10 +2,20 @@
 #include <SDL2/SDL_ttf.h>
 #include <pthread.h>
 
+void DrawCircle(SDL_Renderer* renderer, int32_t centreX, int32_t centreY, int32_t radius) {
+    for (int32_t y = -radius; y <= radius; y++) {
+        for (int32_t x = -radius; x <= radius; x++) {
+            if (x*x + y*y <= radius*radius) {
+                SDL_RenderDrawPoint(renderer, centreX + x, centreY + y);
+            }
+        }
+    }
+}
+
 /**
  * @source https://discourse.libsdl.org/t/query-how-do-you-draw-a-circle-in-sdl2-sdl2/33379
 */
-void DrawCircle(SDL_Renderer* renderer, int32_t centreX, int32_t centreY, int32_t radius) {
+void DrawHollowCircle(SDL_Renderer* renderer, int32_t centreX, int32_t centreY, int32_t radius) {
     const int32_t diameter = (radius * 2);
 
     int32_t x = (radius - 1);
@@ -95,14 +105,50 @@ void draw_customer_locations(SDL_Renderer* m_window_renderer, cvrptw_problem_t p
     SDL_SetRenderDrawColor(m_window_renderer, 255, 0, 0, 255);
     DrawCircle(m_window_renderer, problem.data[0].xcoord, problem.data[0].ycoord, VISUALIZER_DEPOT_RADIUS);
     
-    SDL_SetRenderDrawColor(m_window_renderer, 0, 255, 0, 255);
-    for (int i = 1; i < problem.num_customers; i++) {
+    #if TIME_WINDOWS_COLOR_CODING == 0
+    SDL_SetRenderDrawColor(m_window_renderer, 100, 100, 100, 255);
+    #endif
+
+
+    /*for (int i = 1; i < problem.num_customers; i++) {
+        #if TIME_WINDOWS_COLOR_CODING == 1
         if (problem.data[i].ready_time <= t && t <= problem.data[i].due_time) {
             SDL_SetRenderDrawColor(m_window_renderer, 0, 255, 0, 255);
         } else {
             SDL_SetRenderDrawColor(m_window_renderer, 100, 100, 100, 255);
         }
-        DrawCircle(m_window_renderer, problem.data[i].xcoord, problem.data[i].ycoord, VISUALIZER_CUSTOMER_RADIUS == 0 ? problem.data[i].demand : VISUALIZER_CUSTOMER_RADIUS);
+        #endif
+        #if TIME_WINDOWS_HIDE_CUSTOMERS == 1
+        if (problem.data[i].ready_time > t || t > problem.data[i].due_time) {
+            continue;
+        }
+        #endif
+        DrawHollowCircle(m_window_renderer, problem.data[i].xcoord, problem.data[i].ycoord, VISUALIZER_CUSTOMER_RADIUS == 0 ? problem.data[i].demand : VISUALIZER_CUSTOMER_RADIUS);
+    }*/
+
+    SDL_SetRenderDrawColor(m_window_renderer, 100, 100, 100, 255);
+    #if TIME_WINDOWS_HIDE_CUSTOMERS == 0
+    for (int i = 1; i < problem.num_customers; i++) {
+        if (problem.data[i].ready_time > t || t > problem.data[i].due_time) {
+            #if CUSTOMER_CIRCLE_FILLED == 1
+            DrawCircle(m_window_renderer, problem.data[i].xcoord, problem.data[i].ycoord, VISUALIZER_CUSTOMER_RADIUS == 0 ? problem.data[i].demand : VISUALIZER_CUSTOMER_RADIUS);
+            #else
+            DrawHollowCircle(m_window_renderer, problem.data[i].xcoord, problem.data[i].ycoord, VISUALIZER_CUSTOMER_RADIUS == 0 ? problem.data[i].demand : VISUALIZER_CUSTOMER_RADIUS);
+            #endif
+        }
+    }
+    #endif
+    #if TIME_WINDOWS_COLOR_CODING == 1
+    SDL_SetRenderDrawColor(m_window_renderer, 0, 255, 0, 255);
+    #endif
+    for (int i = 1; i < problem.num_customers; i++) {
+        if (problem.data[i].ready_time <= t && t <= problem.data[i].due_time) {
+            #if CUSTOMER_CIRCLE_FILLED == 1
+            DrawCircle(m_window_renderer, problem.data[i].xcoord, problem.data[i].ycoord, VISUALIZER_CUSTOMER_RADIUS == 0 ? problem.data[i].demand : VISUALIZER_CUSTOMER_RADIUS);
+            #else
+            DrawHollowCircle(m_window_renderer, problem.data[i].xcoord, problem.data[i].ycoord, VISUALIZER_CUSTOMER_RADIUS == 0 ? problem.data[i].demand : VISUALIZER_CUSTOMER_RADIUS);
+            #endif
+        }
     }
 
 }
@@ -161,7 +207,7 @@ void animate(cvrptw_problem_t problem) {
         draw_customer_locations(m_window_renderer, problem, window_width, window_height, counter);
         render_counter(counter);
         SDL_RenderPresent(m_window_renderer);
-        SDL_Delay(100);
+        SDL_Delay(FRAME_DURATION_MS);
         counter++;
     }
 }
