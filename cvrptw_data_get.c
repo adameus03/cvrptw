@@ -1,7 +1,8 @@
 #include "cvrptw_data_get.h"
 #include "config.h"
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h> // atoi
+#include <string.h> // strtok
 
 
 /**
@@ -43,9 +44,44 @@ cvrptw_problem_t cvrptw_data_get(char* path) {
     return problem;
 }
 
+cvrptw_solution_t cvrptw_solution_get(char* path) {
+    cvrptw_solution_t solution;
+    FILE* file = fopen(path, "r");
+    if (file == NULL) {
+        perror("Error: could not open file");
+        exit(EXIT_FAILURE);
+    }
+
+    solution.num_customers = 0;
+    solution.num_vehicles = 0;
+
+    char line[MAX_CVRPTW_SOL_FILE_LINE_LENGTH];
+    while (NULL != fgets(line, MAX_CVRPTW_SOL_FILE_LINE_LENGTH, file)) {
+        // Read dash-separated customer numbers into solution.custno_index using strtok
+        // Insert the position of the first customer in the solution.custno_index buffer into solution.route_head_custno_index as well
+        char* custno_str = strtok(line, "-");
+        if (custno_str != NULL) {
+            solution.route_head_index[solution.num_vehicles] = solution.num_customers;
+        }
+        else {
+            perror("Error: strtok returned NULL");
+            exit(EXIT_FAILURE);
+        }
+        while (custno_str != NULL) {
+            solution.custno_index[solution.num_customers] = atoi(custno_str);
+            solution.num_customers++;
+            custno_str = strtok(NULL, "-");
+        }
+        solution.num_vehicles++;
+    }
+
+    fclose(file);
+    return solution;
+}
+
 void cvrptw_data_print(cvrptw_problem_t problem) {
     printf("Number of customers: %u\n", problem.num_customers);
-    for (int i = 0; i < problem.num_customers; i++) {
+    for (cust_numeric_t i = 0; i < problem.num_customers; i++) {
         printf("%u %u %u %u %u %u %u\n", 
             problem.data[i].cust_no,
             problem.data[i].xcoord,
@@ -56,4 +92,22 @@ void cvrptw_data_print(cvrptw_problem_t problem) {
             problem.data[i].service_time
         );
     }
+}
+
+void cvrptw_solution_print(cvrptw_solution_t solution) {
+    printf("Number of vehicles: %u\n", solution.num_vehicles);
+    for (vehicle_numeric_t i = 0; i < solution.num_vehicles - 1; i++) {
+        printf("Route of vehicle %u: ", i);
+        for (cust_numeric_t j = solution.route_head_index[i]; j < solution.route_head_index[i + 1] - 1; j++) {
+            printf("%u-", solution.custno_index[j]);
+        }
+        printf("%u", solution.custno_index[solution.route_head_index[i + 1] - 1]);
+        printf("\n");
+    }
+    printf("Route of vehicle %u: ", solution.num_vehicles - 1);
+    for (cust_numeric_t j = solution.route_head_index[solution.num_vehicles - 1]; j < solution.num_customers - 1; j++) {
+        printf("%u-", solution.custno_index[j]);
+    }
+    printf("%u", solution.custno_index[solution.num_customers - 1]);
+    printf("\n");
 }

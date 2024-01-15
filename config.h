@@ -1,5 +1,7 @@
 /*[x]*/#define CVRPTW_MAX_CUSTOMERS 101
+       #define CVRPTW_MAX_VEHICLES 100
 /*[x]*/#define MAX_CVRPTW_DATA_FILE_LINE_LENGTH 100
+       #define MAX_CVRPTW_SOL_FILE_LINE_LENGTH 500
 
 /*[x]*/#define VISUALIZER_WINDOW_WIDTH 0 // 0 means full-width
 /*[x]*/#define VISUALIZER_WINDOW_HEIGHT 0 // 0 means full-height
