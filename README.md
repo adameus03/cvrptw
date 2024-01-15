@@ -7,3 +7,5 @@
 
 ### To visualize for any file, modify the line in `main.c`
 `load_animation_for_data("../data/r101");`
+
+### Customization is possible via editing the `config.h` header file
