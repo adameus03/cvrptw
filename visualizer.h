@@ -5,6 +5,7 @@
 void DrawCircle(SDL_Renderer* renderer, int32_t centreX, int32_t centreY, int32_t radius);
 void DrawHollowCircle(SDL_Renderer* renderer, int32_t centreX, int32_t centreY, int32_t radius);
 void draw_customer_locations(SDL_Renderer* m_window_renderer, cvrptw_problem_t problem, unsigned int window_width, unsigned int window_height, ready_time_t t);
+void draw_vehicle_locations(SDL_Renderer* m_windows_renderer, cvrptw_problem_t problem, cvrptw_solution_t sol, unsigned int window_width, unsigned int window_height, ready_time_t t);
 void animate_problem(cvrptw_problem_t problem);
 void animate_problem_with_solution(cvrptw_problem_t problem, cvrptw_solution_t solution);
 int display_cvrptw_visualization_window();

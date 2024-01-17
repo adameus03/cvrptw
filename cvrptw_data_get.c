@@ -31,6 +31,14 @@ cvrptw_problem_t cvrptw_data_get(char* path) {
     char line[MAX_CVRPTW_DATA_FILE_LINE_LENGTH];
     
     if (NULL != fgets(line, MAX_CVRPTW_DATA_FILE_LINE_LENGTH, file)) {
+        sscanf(line, "%u", &problem.vehicle_capacity);
+    }
+    else {
+        perror("Error: fgets returned NULL when trying to read vehicle capacity");
+        exit(EXIT_FAILURE);
+    }
+
+    if (NULL != fgets(line, MAX_CVRPTW_DATA_FILE_LINE_LENGTH, file)) {
         sscanf(line, "%u %u.00 %u.00 %u.00 %u.00 %u.00 %u.00",
             &problem.depot.cust_no,
             &problem.depot.xcoord,
@@ -42,7 +50,7 @@ cvrptw_problem_t cvrptw_data_get(char* path) {
         );
     }
     else {
-        perror("Error: fgets returned NULL");
+        perror("Error: fgets returned NULL when trying to read depot data");
         exit(EXIT_FAILURE);
     }
 
@@ -71,7 +79,7 @@ cvrptw_solution_t cvrptw_solution_get(char* path) {
         exit(EXIT_FAILURE);
     }
 
-    solution.num_customers = 0;
+    solution.total_num_customers = 0;
     solution.num_vehicles = 0;
 
     char line[MAX_CVRPTW_SOL_FILE_LINE_LENGTH];
@@ -80,15 +88,17 @@ cvrptw_solution_t cvrptw_solution_get(char* path) {
         // Insert the position of the first customer in the solution.custno_index buffer into solution.route_head_custno_index as well
         char* custno_str = strtok(line, "-");
         if (custno_str != NULL) {
-            solution.route_head_index[solution.num_vehicles] = solution.num_customers;
+            solution.route_head_index[solution.num_vehicles] = solution.total_num_customers;
         }
         else {
             perror("Error: strtok returned NULL");
             exit(EXIT_FAILURE);
         }
+        solution.num_customers_in_route[solution.num_vehicles] = 0;
         while (custno_str != NULL) {
-            solution.custno_index[solution.num_customers] = atoi(custno_str);
-            solution.num_customers++;
+            solution.custno_index[solution.total_num_customers] = atoi(custno_str) - 1;
+            solution.total_num_customers++;
+            solution.num_customers_in_route[solution.num_vehicles]++;
             custno_str = strtok(NULL, "-");
         }
         solution.num_vehicles++;
@@ -100,6 +110,7 @@ cvrptw_solution_t cvrptw_solution_get(char* path) {
 
 void cvrptw_data_print(cvrptw_problem_t problem) {
     printf("Number of customers: %u\n", problem.num_customers);
+    printf("Vehicle capacity: %u\n", problem.vehicle_capacity);
     printf("Depot: %u %u %u %u %u %u %u\n", 
         problem.depot.cust_no,
         problem.depot.xcoord,
@@ -129,15 +140,15 @@ void cvrptw_solution_print(cvrptw_solution_t solution) {
     for (vehicle_numeric_t i = 0; i < solution.num_vehicles - 1; i++) {
         printf("Route of vehicle %u: ", i);
         for (cust_numeric_t j = solution.route_head_index[i]; j < solution.route_head_index[i + 1] - 1; j++) {
-            printf("%u-", solution.custno_index[j]);
+            printf("%u-", 1 + solution.custno_index[j]);
         }
-        printf("%u", solution.custno_index[solution.route_head_index[i + 1] - 1]);
+        printf("%u", 1 + solution.custno_index[solution.route_head_index[i + 1] - 1]);
         printf("\n");
     }
     printf("Route of vehicle %u: ", solution.num_vehicles - 1);
-    for (cust_numeric_t j = solution.route_head_index[solution.num_vehicles - 1]; j < solution.num_customers - 1; j++) {
-        printf("%u-", solution.custno_index[j]);
+    for (cust_numeric_t j = solution.route_head_index[solution.num_vehicles - 1]; j < solution.total_num_customers - 1; j++) {
+        printf("%u-", 1 + solution.custno_index[j]);
     }
-    printf("%u", solution.custno_index[solution.num_customers - 1]);
+    printf("%u", 1 + solution.custno_index[solution.total_num_customers - 1]);
     printf("\n");
 }
