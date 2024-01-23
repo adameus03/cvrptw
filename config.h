@@ -18,5 +18,5 @@
 /*[x]*/#define TIME_WINDOWS_COLOR_CODING 1
 /*[x]*/#define TIME_WINDOWS_HIDE_CUSTOMERS 0
 
-/*[x]*/#define FRAME_DURATION_MS 10
+/*[x]*/#define FRAME_DURATION_MS 100
 /*[ ]*/#define ANIMATION_MANUAL_CONTROL 0
