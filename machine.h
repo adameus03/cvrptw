@@ -5,6 +5,7 @@
 
 typedef unsigned int state_t;
 typedef unsigned int transitions_num_limit_t;
+typedef unsigned char opcode_t;
 
 /**
  * The file specifies FSM instructions
@@ -57,8 +58,8 @@ typedef struct {
  * Tape "position" registers; used for reading/writing cleint and vehicle tapes
 */
 typedef struct {
-    cust_numeric_t cposreg = 0;
-    vehicle_numeric_t vposreg = 0;
+    cust_numeric_t cposreg;
+    vehicle_numeric_t vposreg;
 } posregs_t;
 
 
@@ -73,6 +74,7 @@ typedef struct {
 
 typedef struct {
     branch_trigger_t trigger;
+    opcode_t opcode;
     state_t next_state;
 } state_transition_t;
 
@@ -95,8 +97,14 @@ typedef struct
 } machine_internals_t;
 
 typedef machine_internals_t* mp;
-typedef void (*OP)(mp);
-typedef unsigned char (*BRANCH_OP)(mp);
+
+typedef void (*SIMPLE_OP)(mp); //Operation that does not return a branch trigger
+typedef unsigned char (*BRANCH_OP)(mp); //Operation that returns a branch trigger
+
+typedef union {
+    SIMPLE_OP simple_op;
+    BRANCH_OP branch_op;
+} OP;
 
 
 
@@ -140,14 +148,39 @@ void nop(mp m);
 */
 void fin(mp m);
 
-OP instructions[17] = {
-    fin, nop, creg1w, creg2w, creg1r, creg2r, cdist, nad, nsum, ndue, nready, nservt, ndem, nreg1w, nreg2w, nreg1r, nreg2r
-};
+const opcode_t BRANCH_OPS_START_OPCODE = 0x02;
+const opcode_t SIMPLE_OPS_START_OPCODE = 0x05; 
 
-BRANCH_OP branch_instructions[3] = {
-    cmovl, cmovr, nc
-};
+//BRANCH macro returns an OP with a branch operation
+#define BRANCH(op) (OP){.branch_op = op}
+//SIMPLE macro returns an OP with a simple operation
+#define SIMPLE(op) (OP){.simple_op = op} 
 
-machine_exit_status run_machine(cvrptw_problem_t* problem, cvrptw_machine_sol_t* sol, fsm_matrix_t* fsm_matrix);
+OP instructions[20];
+
+void init_instructions() {
+    instructions[0] = SIMPLE(fin); 
+    instructions[1] = SIMPLE(nop); 
+    instructions[2] = BRANCH(cmovl); 
+    instructions[3] = BRANCH(cmovr); 
+    instructions[4] = BRANCH(nc); 
+    instructions[5] = SIMPLE(creg1w); 
+    instructions[6] = SIMPLE(creg2w); 
+    instructions[7] = SIMPLE(creg1r); 
+    instructions[8] = SIMPLE(creg2r); 
+    instructions[9] = SIMPLE(cdist); 
+    instructions[10] = SIMPLE(nad); 
+    instructions[11] = SIMPLE(nsum); 
+    instructions[12] = SIMPLE(ndue); 
+    instructions[13] = SIMPLE(nready); 
+    instructions[14] = SIMPLE(nservt); 
+    instructions[15] = SIMPLE(ndem); 
+    instructions[16] = SIMPLE(nreg1w);
+    instructions[17] = SIMPLE(nreg2w); 
+    instructions[18] = SIMPLE(nreg1r); 
+    instructions[19] = SIMPLE(nreg2r);
+}
+
+machine_exit_status run_machine(cvrptw_problem_t* problem, cvrptw_machine_sol_t* sol, fsm_matrix_t* fsm_matrix, transitions_num_limit_t op_limit);
 
 
