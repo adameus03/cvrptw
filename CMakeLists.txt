@@ -4,7 +4,7 @@ project(cvrptw_animation VERSION 0.1.0 LANGUAGES C)
 
 
 
-add_executable(cvrptw_animation cvrptw_data_get.c visualizer.c main.c)
+add_executable(cvrptw_animation cvrptw_data_get.c visualizer.c solver.c main.c)
 
 INCLUDE(FindPkgConfig)
 
